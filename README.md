@@ -140,7 +140,7 @@ Try our demo on [Demo-Dolphin](https://huggingface.co/spaces/ByteDance/Dolphin).
    ```bash
    # Download the model from Hugging Face Hub
    git lfs install
-   git clone https://huggingface.co/ByteDance/Dolphin ./hf_model
+   git clone https://huggingface.co/ByteDance/Dolphin-1.5 ./hf_model
    # Or use the Hugging Face CLI
    pip install huggingface_hub
    huggingface-cli download ByteDance/Dolphin-1.5 --local-dir ./hf_model
