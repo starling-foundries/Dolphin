@@ -158,7 +158,7 @@ Dolphin provides two inference frameworks with support for two parsing granulari
 ```bash
 # Process a single document image
 python demo_page.py --model_path ./hf_model --save_dir ./results \
-    --input_path ./demo/page_imgs/page_1.jpeg 
+    --input_path ./demo/page_imgs/page_1.png 
 
 # Process a single document pdf
 python demo_page.py --model_path ./hf_model --save_dir ./results \
@@ -187,7 +187,7 @@ python demo_element.py --model_path ./hf_model --save_dir ./results \
 ````bash
 # Process a single document image
 python demo_layout.py --model_path ./hf_model --save_dir ./results \
-    --input_path ./demo/page_imgs/page_1.jpeg \
+    --input_path ./demo/page_imgs/page_1.png \
     
 # Process a single PDF document
 python demo_layout.py --model_path ./hf_model --save_dir ./results \
