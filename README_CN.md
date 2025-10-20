@@ -157,7 +157,7 @@ Dolphin提供两个推理框架，支持两种解析粒度：
 ```bash
 # 处理单个文档图像
 python demo_page.py --model_path ./hf_model --save_dir ./results \
-    --input_path ./demo/page_imgs/page_1.jpeg 
+    --input_path ./demo/page_imgs/page_1.png 
 
 # 处理单个文档PDF
 python demo_page.py --model_path ./hf_model --save_dir ./results \
@@ -186,7 +186,7 @@ python demo_element.py --model_path ./hf_model --save_dir ./results \
 ````bash
 # 处理单个文档图像
 python demo_layout.py --model_path ./hf_model --save_dir ./results \
-    --input_path ./demo/page_imgs/page_1.jpeg \
+    --input_path ./demo/page_imgs/page_1.png \
     
 # 处理单个文档PDF
 python demo_layout.py --model_path ./hf_model --save_dir ./results \
