@@ -112,10 +112,10 @@ Try our demo on [Demo-Dolphin](https://huggingface.co/spaces/ByteDance/Dolphin).
             <td>Dolphin-1.5</td>
             <td><strong>81.44</strong></td>
             <td><strong>0.092</strong></td>
-            <td><strong>80.3</strong></td>
-            <td><strong>73.19</strong></td>
-            <td><strong>80.24</strong></td>
-            <td><strong>0.082</strong></td>
+            <td><strong>81.10</strong></td>
+            <td><strong>72.43</strong></td>
+            <td><strong>78.30</strong></td>
+            <td><strong>0.079</strong></td>
         </tr>
     </tbody>
 </table>
