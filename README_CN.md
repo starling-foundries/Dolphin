@@ -110,12 +110,12 @@ Dolphin在多样化的页面级和元素级解析任务中取得了优异的性�
         </tr>
         <tr>
             <td>Dolphin-1.5</td>
-            <td><strong>81.17</strong></td>
-            <td><strong>0.093</strong></td>
-            <td><strong>81.70</strong></td>
-            <td><strong>71.10</strong></td>
-            <td><strong>77.90</strong></td>
-            <td><strong>0.080</strong></td>
+            <td><strong>81.44</strong></td>
+            <td><strong>0.092</strong></td>
+            <td><strong>81.10</strong></td>
+            <td><strong>72.43</strong></td>
+            <td><strong>78.30</strong></td>
+            <td><strong>0.079</strong></td>
         </tr>
     </tbody>
 </table>
