@@ -186,7 +186,6 @@ def process_elements(layout_results, padded_image, dims, model, max_batch_size, 
     """Parse all document elements with parallel decoding"""
     layout_results = parse_layout_string(layout_results)
 
-    # 按处理方式分组（而不是按label分组）
     tab_elements = []      
     equ_elements = []     
     code_elements = []    
@@ -195,7 +194,7 @@ def process_elements(layout_results, padded_image, dims, model, max_batch_size, 
     previous_box = None
     reading_order = 0
 
-    # 收集元素并按处理方式分组
+    # Collect elements and group
     for bbox, label in layout_results:
         try:
             x1, y1, x2, y2, orig_x1, orig_y1, orig_x2, orig_y2, previous_box = process_coordinates(
@@ -216,7 +215,7 @@ def process_elements(layout_results, padded_image, dims, model, max_batch_size, 
                         "reading_order": reading_order,
                     })
                 else:
-                    # 准备元素信息
+                    # Prepare element information
                     element_info = {
                         "crop": pil_crop,
                         "label": label,
