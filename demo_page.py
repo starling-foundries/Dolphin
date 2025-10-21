@@ -89,7 +89,7 @@ class DOLPHIN:
             bad_words_ids=[[self.tokenizer.unk_token_id]],
             return_dict_in_generate=True,
             do_sample=False,
-            num_beams=2
+            num_beams=1
         )
         
         # Process output
