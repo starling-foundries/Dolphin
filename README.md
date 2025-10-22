@@ -101,12 +101,12 @@ Try our demo on [Demo-Dolphin](https://huggingface.co/spaces/ByteDance/Dolphin).
     <tbody>
         <tr>
             <td>Dolphin</td>
-            <td>73.62</td>
-            <td>0.120</td>
-            <td>71.70</td>
-            <td>61.15</td>
-            <td>68.30</td>
-            <td>0.118</td>
+            <td>74.67</td>
+            <td>0.125</td>
+            <td>67.85</td>
+            <td>68.70</td>
+            <td>77.77</td>
+            <td>0.124</td>
         </tr>
         <tr>
             <td>Dolphin-1.5</td>
