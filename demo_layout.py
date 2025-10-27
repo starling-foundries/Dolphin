@@ -52,9 +52,9 @@ class DOLPHIN:
         pixel_values = self.processor(image, return_tensors="pt").pixel_values
         # Use float16 on CUDA, float32 on CPU
         if self.device == "cuda":
-            pixel_values = pixel_values.pixel_values.half().to(self.device)
+            pixel_values = pixel_values.half().to(self.device)
         else:
-            pixel_values = pixel_values.pixel_values.float().to(self.device)
+            pixel_values = pixel_values.float().to(self.device)
             
         # Prepare prompt
         prompt = f"<s>{prompt} <Answer/>"
