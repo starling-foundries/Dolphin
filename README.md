@@ -45,6 +45,7 @@ Dolphin achieves promising performance across diverse page-level and element-lev
 Try our demo on [Demo-Dolphin](https://huggingface.co/spaces/ByteDance/Dolphin). -->
 
 ## 📅 Changelog
+- 🔥 **2025.11.06** Our new model is coming soon！ 
 - 🔥 **2025.10.16** Released *Dolphin-1.5* model. While maintaining the lightweight 0.3B architecture, this version achieves significant parsing improvements. (Dolphin 1.0 moved to [v1.0 branch](https://github.com/bytedance/Dolphin/tree/v1.0))
 - 🔥 **2025.07.10** Released the *Fox-Page Benchmark*, a manually refined subset of the original [Fox dataset](https://github.com/ucaslcl/Fox). Download via: [Baidu Yun](https://pan.baidu.com/share/init?surl=t746ULp6iU5bUraVrPlMSw&pwd=fox1) | [Google Drive](https://drive.google.com/file/d/1yZQZqI34QCqvhB4Tmdl3X_XEvYvQyP0q/view?usp=sharing).
 - 🔥 **2025.06.30** Added [TensorRT-LLM support](https://github.com/bytedance/Dolphin/blob/master/deployment/tensorrt_llm/ReadMe.md) for accelerated inference！
