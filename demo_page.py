@@ -7,10 +7,10 @@ import argparse
 import glob
 import os
 
-import cv2
 import torch
 from PIL import Image
-from transformers import AutoProcessor, VisionEncoderDecoderModel
+from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
+from qwen_vl_utils import process_vision_info
 
 from utils.utils import *
 
@@ -24,31 +24,23 @@ class DOLPHIN:
         """
         # Load model from local path or Hugging Face hub
         self.processor = AutoProcessor.from_pretrained(model_id_or_path)
-        self.model = VisionEncoderDecoderModel.from_pretrained(model_id_or_path)
+        self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_id_or_path)
         self.model.eval()
         
         # Set device and precision
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model.to(self.device)
-        # Use float16 on CUDA, float32 on CPU
+
         if self.device == "cuda":
-            self.model = self.model.half()
+            self.model = self.model.bfloat16()
         else:
             self.model = self.model.float()
         
         # set tokenizer
         self.tokenizer = self.processor.tokenizer
-        
+        self.tokenizer.padding_side = "left"
+
     def chat(self, prompt, image):
-        """Process an image or batch of images with the given prompt(s)
-        
-        Args:
-            prompt: Text prompt or list of prompts to guide the model
-            image: PIL Image or list of PIL Images to process
-            
-        Returns:
-            Generated text or list of texts from the model
-        """
         # Check if we're dealing with a batch
         is_batch = isinstance(image, list)
         
@@ -61,50 +53,71 @@ class DOLPHIN:
             images = image
             prompts = prompt if isinstance(prompt, list) else [prompt] * len(images)
         
-        # Prepare image
-        batch_inputs = self.processor(images, return_tensors="pt", padding=True)
-        # Use float16 on CUDA, float32 on CPU
-        if self.device == "cuda":
-            batch_pixel_values = batch_inputs.pixel_values.half().to(self.device)
-        else:
-            batch_pixel_values = batch_inputs.pixel_values.float().to(self.device)
+        assert len(images) == len(prompts)
         
-        # Prepare prompt
-        prompts = [f"<s>{p} <Answer/>" for p in prompts]
-        batch_prompt_inputs = self.tokenizer(
-            prompts,
-            add_special_tokens=False,
-            return_tensors="pt"
+        # preprocess all images
+        processed_images = [resize_img(img) for img in images]
+        # generate all messages
+        all_messages = []
+        for img, question in zip(processed_images, prompts):
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "image": img,
+                        },
+                        {"type": "text", "text": question}
+                    ],
+                }
+            ]
+            all_messages.append(messages)
+
+        # prepare all texts
+        texts = [
+            self.processor.apply_chat_template(
+                msgs, tokenize=False, add_generation_prompt=True
+            )
+            for msgs in all_messages
+        ]
+
+        # collect all image inputs
+        all_image_inputs = []
+        all_video_inputs = None
+        for msgs in all_messages:
+            image_inputs, video_inputs = process_vision_info(msgs)
+            all_image_inputs.extend(image_inputs)
+
+        # prepare model inputs
+        inputs = self.processor(
+            text=texts,
+            images=all_image_inputs if all_image_inputs else None,
+            videos=all_video_inputs if all_video_inputs else None,
+            padding=True,
+            return_tensors="pt",
+        )
+        inputs = inputs.to(self.model.device)
+
+        # inference
+        generated_ids = self.model.generate(
+            **inputs,
+            max_new_tokens=4096,
+            do_sample=False,
+            temperature=None,
+            # repetition_penalty=1.05
+        )
+        generated_ids_trimmed = [
+            out_ids[len(in_ids):] 
+            for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+        ]
+        
+        results = self.processor.batch_decode(
+            generated_ids_trimmed, 
+            skip_special_tokens=True, 
+            clean_up_tokenization_spaces=False
         )
 
-        batch_prompt_ids = batch_prompt_inputs.input_ids.to(self.device)
-        batch_attention_mask = batch_prompt_inputs.attention_mask.to(self.device)
-        
-        # Generate text
-        outputs = self.model.generate(
-            pixel_values=batch_pixel_values,
-            decoder_input_ids=batch_prompt_ids,
-            decoder_attention_mask=batch_attention_mask,
-            min_length=1,
-            max_length=4096,
-            pad_token_id=self.tokenizer.pad_token_id,
-            eos_token_id=self.tokenizer.eos_token_id,
-            use_cache=True,
-            bad_words_ids=[[self.tokenizer.unk_token_id]],
-            return_dict_in_generate=True,
-            do_sample=False,
-            num_beams=1
-        )
-        
-        # Process output
-        sequences = self.tokenizer.batch_decode(outputs.sequences, skip_special_tokens=False)
-        
-        # Clean prompt text from output
-        results = []
-        for i, sequence in enumerate(sequences):
-            cleaned = sequence.replace(prompts[i], "").replace("<pad>", "").replace("</s>", "").strip()
-            results.append(cleaned)
-            
         # Return a single result for single image input
         if not is_batch:
             return results[0]
@@ -171,60 +184,68 @@ def process_single_image(image, model, save_dir, image_name, max_batch_size=None
     """
     # Stage 1: Page-level layout and reading order parsing
     layout_output = model.chat("Parse the reading order of this document.", image)
+    # print(layout_output)
 
     # Stage 2: Element-level content parsing
-    padded_image, dims = prepare_image(image)
-    recognition_results = process_elements(layout_output, padded_image, dims, model, max_batch_size, save_dir, image_name)
+    recognition_results = process_elements(layout_output, image, model, max_batch_size, save_dir, image_name)
 
     # Save outputs only if requested (skip for PDF pages)
     json_path = None
     if save_individual:
         # Create a dummy image path for save_outputs function
-        dummy_image_path = f"{image_name}.jpg"  # Extension doesn't matter, only basename is used
-        json_path = save_outputs(recognition_results, dummy_image_path, save_dir)
+        json_path = save_outputs(recognition_results, image, image_name, save_dir)
 
     return json_path, recognition_results
 
 
-def process_elements(layout_results, padded_image, dims, model, max_batch_size, save_dir=None, image_name=None):
+def process_elements(layout_results, image, model, max_batch_size, save_dir=None, image_name=None):
     """Parse all document elements with parallel decoding"""
-    layout_results = parse_layout_string(layout_results)
-
+    layout_results_list = parse_layout_string(layout_results)
+    if not layout_results_list or not (layout_results.startswith("[") and layout_results.endswith("]")):
+        layout_results_list = [([0, 0, *image.size], 'distorted_page', [])]
+    # Check for bbox overlap - if too many overlaps, treat as distorted page
+    elif len(layout_results_list) > 1 and check_bbox_overlap(layout_results_list, image):
+        print("Falling back to distorted_page mode due to high bbox overlap")
+        layout_results_list = [([0, 0, *image.size], 'distorted_page', [])]
+        
     tab_elements = []      
     equ_elements = []     
     code_elements = []    
     text_elements = []     
     figure_results = []    
-    previous_box = None
     reading_order = 0
 
     # Collect elements and group
-    for bbox, label in layout_results:
+    for bbox, label, tags in layout_results_list:
         try:
-            x1, y1, x2, y2, orig_x1, orig_y1, orig_x2, orig_y2, previous_box = process_coordinates(
-                bbox, padded_image, dims, previous_box
-            )
+            if label == "distorted_page":
+                x1, y1, x2, y2 = 0, 0, *image.size
+                pil_crop = image
+            else:
+                # get coordinates in the original image
+                x1, y1, x2, y2 = process_coordinates(bbox, image)
+                # crop the image
+                pil_crop = image.crop((x1, y1, x2, y2))
 
-            cropped = padded_image[y1:y2, x1:x2]
-            if cropped.size > 0 and cropped.shape[0] > 3 and cropped.shape[1] > 3:
-                pil_crop = Image.fromarray(cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB))
-                
+            if pil_crop.size[0] > 3 and pil_crop.size[1] > 3:
                 if label == "fig":
                     figure_filename = save_figure_to_local(pil_crop, save_dir, image_name, reading_order)
                     figure_results.append({
                         "label": label,
                         "text": f"![Figure](figures/{figure_filename})",
                         "figure_path": f"figures/{figure_filename}",
-                        "bbox": [orig_x1, orig_y1, orig_x2, orig_y2],
+                        "bbox": [x1, y1, x2, y2],
                         "reading_order": reading_order,
+                        "tags": tags,
                     })
                 else:
                     # Prepare element information
                     element_info = {
                         "crop": pil_crop,
                         "label": label,
-                        "bbox": [orig_x1, orig_y1, orig_x2, orig_y2],
+                        "bbox": [x1, y1, x2, y2],
                         "reading_order": reading_order,
+                        "tags": tags,
                     }
                     
                     if label == "tab":
@@ -293,6 +314,7 @@ def process_element_batch(elements, model, prompt, max_batch_size=None):
                 "bbox": elem["bbox"],
                 "text": result.strip(),
                 "reading_order": elem["reading_order"],
+                "tags": elem["tags"],
             })
     
     return results
@@ -311,8 +333,8 @@ def main():
     parser.add_argument(
         "--max_batch_size",
         type=int,
-        default=16,
-        help="Maximum number of document elements to parse in a single batch (default: 16)",
+        default=4,
+        help="Maximum number of document elements to parse in a single batch (default: 4)",
     )
     args = parser.parse_args()
 

@@ -268,6 +268,7 @@ class MarkdownConverter:
                         # Handle regular text (paragraphs, etc.)
                         processed_text = self._handle_text(text)
                         markdown_content.append(f"{processed_text}\n\n")
+                        # TODO: distoraged page
 
                 except Exception as e:
                     print(f"Error processing item {section_count}: {str(e)}")
