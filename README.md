@@ -30,7 +30,7 @@ Dolphin-v2 is an enhanced universal document parsing model that substantially im
 
 ## 📑 Overview
 
-Document image parsing is challenging due to its complexly intertwined elements such as text paragraphs, figures, formulas, and tables. Dolphin addresses these challenges through a two-stage approach:
+Document image parsing is challenging due to diverse document types and complexly intertwined elements such as text paragraphs, figures, formulas, tables, and code blocks. Dolphin-v2 addresses these challenges through a document-type-aware two-stage approach:
 
 1. **🔍 Stage 1**: Document type classification (digital vs. photographed) + layout analysis with reading order prediction
 2. **🧩 Stage 2**: Hybrid parsing strategy - holistic parsing for photographed documents, parallel element-wise parsing for digital documents
