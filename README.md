@@ -25,15 +25,15 @@
 </div>
 
 # Dolphin: Document Image Parsing via Heterogeneous Anchor Prompting
+Dolphin-v2 is an enhanced universal document parsing model that substantially improves upon the original Dolphin. It seamlessly handles any document type—whether digital-born or photographed—through a document-type-aware two-stage architecture with scalable anchor prompting.
 
-Dolphin (**Do**cument Image **P**arsing via **H**eterogeneous Anchor Prompt**in**g) is a novel multimodal document image parsing model (**0.3B**) following an analyze-then-parse paradigm. This repository contains the demo code and pre-trained models for Dolphin.
 
 ## 📑 Overview
 
 Document image parsing is challenging due to its complexly intertwined elements such as text paragraphs, figures, formulas, and tables. Dolphin addresses these challenges through a two-stage approach:
 
-1. **🔍 Stage 1**: Comprehensive page-level layout analysis by generating element sequence in natural reading order
-2. **🧩 Stage 2**: Efficient parallel parsing of document elements using heterogeneous anchors and task-specific prompts
+1. **🔍 Stage 1**: Document type classification (digital vs. photographed) + layout analysis with reading order prediction
+2. **🧩 Stage 2**: Hybrid parsing strategy - holistic parsing for photographed documents, parallel element-wise parsing for digital documents
 
 <div align="center">
   <img src="./assets/framework.png" width="680">
