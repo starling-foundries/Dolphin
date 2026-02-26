@@ -1,37 +1,39 @@
 [project]
 name = "dolphin"
-version = "1.5.0"
+version = "2.0.0"
 description = "Document Image Parsing via Heterogeneous Anchor Prompting"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10,<3.13"
 license = { text = "MIT" }
 dependencies = [
-    "numpy>=1.26.4,<2.0",
-    "omegaconf==2.3.0",
-    "opencv-python>=4.8.0,<4.11",
-    "opencv-python-headless>=4.5.5,<4.6",
-    "pillow>=9.3.0",
-    "timm==0.5.4",
-    "torch>=2.1.0",
-    "torchvision>=0.16.0",
-    "transformers==4.47.0",
-    "accelerate==1.6.0",
-    "pymupdf==1.26",
+    "datasets>=3.6.0",
+    "torch>=2.6.0",
+    "torchvision>=0.21.0",
+    "transformers>=4.51.0",
+    "accelerate>=1.4.0",
+    "decord>=0.6.0",
+    "Levenshtein>=0.27.1",
+    "qwen_vl_utils",
+    "matplotlib",
+    "jieba",
+    "opencv-python",
+    "beautifulsoup4",
+    "albumentations>=1.4.0",
+    "pymupdf>=1.26",
+    "huggingface-hub",
 ]
 
-[tool.black]
-line-length = 120
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
+[tool.uv]
+# For AMD ROCm GPUs, override the PyTorch index:
+#   uv sync --index-url https://download.pytorch.org/whl/rocm6.2
+# For CPU-only:
+#   uv sync --index-url https://download.pytorch.org/whl/cpu
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm6.2"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-rocm" }
+torchvision = { index = "pytorch-rocm" }
