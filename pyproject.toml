@@ -24,15 +24,15 @@ dependencies = [
 ]
 
 [tool.uv]
-# For AMD ROCm GPUs, override the PyTorch index:
-#   uv sync --index-url https://download.pytorch.org/whl/rocm6.2
-# For CPU-only:
-#   uv sync --index-url https://download.pytorch.org/whl/cpu
+index-strategy = "unsafe-best-match"
+environments = ["sys_platform == 'linux'"]
 
 [[tool.uv.index]]
 name = "pytorch-rocm"
 url = "https://download.pytorch.org/whl/rocm6.3"
+explicit = true
 
 [tool.uv.sources]
 torch = { index = "pytorch-rocm" }
 torchvision = { index = "pytorch-rocm" }
+pytorch-triton-rocm = { index = "pytorch-rocm" }
